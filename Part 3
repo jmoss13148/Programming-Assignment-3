@@ -1,0 +1,48 @@
+## 2 column data frame that has the hospital in each
+
+## find a way to do it for each state - loop over vector of unique(state column)
+
+
+rankall <- function(outcome, num = "best") {
+  data <- read.csv("outcome-of-care-measures.csv", colClasses = "character")
+  
+  datasubset <- as.data.frame(cbind(data[, 2],   # hospital
+                                    data[, 7],   # state
+                                    data[, 11],  # heart attack
+                                    data[, 17],  # heart failure
+                                    data[, 23]), # pneumonia
+                              stringsAsFactors = FALSE) 
+  
+  colnames(datasubset) <- c("hospital", "state", "heart attack", "heart failure", "pneumonia")
+  
+  possible_colnum <- numeric()
+  if(outcome == "heart attack")  { possible_colnum = 3 }
+  if(outcome == "heart failure") { possible_colnum = 4 }
+  if(outcome == "pneumonia")     { possible_colnum = 5 }
+  ## check for state and outcome validity 
+  if(!outcome %in% c("heart attack", "heart failure", "pneumonia")){
+    stop("invalid outcome")
+  }
+  else{
+possible <- datasubset[, c(1, 2, possible_colnum)] ## data frame of name, state, and outcome called
+possible_subset <- subset(possible, possible[, 3] != "Not Available") ## remove NAs on all states for outcome called
+
+
+
+states <- sort(unique(possible_subset[, 2]))
+dat <- character() ## make character vector to fill
+
+for(i in seq_along(states)) {
+    state_data <- possible_subset[possible_subset$state == states[i], ] ## data frame with only called state
+      state_data[, 3] <- as.numeric(state_data[, 3]) ## make numeric
+        sorted_state_data <- state_data[order(state_data[, 3], state_data[, 1]), ] ## sort by outcome and name
+        
+  if(num == "best") num = 1
+  if(num == "worst") num = nrow(sorted_state_data)
+        
+        dat[i] <- sorted_state_data[num, 1]
+}
+  }
+  data.frame(hospital = dat, state = states, row.names = states)
+}
+  
