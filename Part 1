@@ -1,0 +1,45 @@
+## assignment 3 
+
+## function takes the state and outcome and returns character vector with 
+## name of hospital that has best ranking for this 
+
+## read outcome data
+## check that state and outcome are valid 
+## return hospital name with lowest 30 day death - use apply functions 
+
+best <- function(state, outcome) {
+  data <- read.csv("outcome-of-care-measures.csv", colClasses = "character")
+  
+  datasubset <- as.data.frame(cbind(data[, 2],    # hospital
+                                     data[, 7],   # state
+                                     data[, 11],  # heart attack
+                                     data[, 17],  # heart failure
+                                     data[, 23]), # pneumonia
+                              stringsAsFactors = FALSE) 
+  
+  colnames(datasubset) <- c("hostpital", "state", "heart attack", "heart failure", "pneumonia")
+  
+  possible_colnum <- numeric()
+  if(outcome == "heart attack") { possible_colnum = 3 }
+  if(outcome == "heart failure") { possible_colnum = 4 }
+  if(outcome == "pneumonia") { possible_colnum = 5 }
+  ## check for state and outcome validity 
+  if(!state %in% datasubset[, "state"]) {
+    stop("invalid state") }
+  else if(!outcome %in% c("heart attack", "heart failure", "pneumonia")){
+    stop('invalid outcome')
+  }
+  else{ 
+    state <- datasubset[datasubset$state == state, ] ## get variables for called state
+    possible <- state[, c(1, possible_colnum)] ## create data frame with name and col_number
+    possible_subset <- subset(possible, possible[, 2] != "Not Available")  ## remove NAs
+    
+    possible_subset[, 2] <- as.numeric(possible_subset[, 2])
+    
+    possible_subset1 <- possible_subset[order(possible_subset[, 2], possible_subset[, 1]), ]
+    ## sort by outcome and name
+    return(possible_subset1[1,1]) ## return name
+  }
+}
+          
+        
